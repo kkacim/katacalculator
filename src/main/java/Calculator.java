@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Calculator {
 
@@ -11,9 +13,11 @@ public class Calculator {
             return 0;
         }
 
-        return Arrays.stream(splitToNumbers(input))
-                .mapToInt(Integer::parseInt)
-                .sum();
+        String[] numbers = splitToNumbers(input);
+
+        checkForNegativeNumbers(numbers);
+
+        return getIntStreamFromArray(numbers).sum();
     }
 
     /**
@@ -54,5 +58,31 @@ public class Calculator {
      */
     private static String[] splitUsingDefaultSeparators(String input) {
         return input.split(DEFAULT_SEPARATOR_REGEX);
+    }
+
+    /**
+     * Transform String array to IntStream
+     *
+     * @param numbers String array
+     * @return IntStream
+     */
+    private static IntStream getIntStreamFromArray(String[] numbers) {
+        return Arrays.stream(numbers).mapToInt(Integer::parseInt);
+    }
+
+    /**
+     * Check that all numbers are positive. If negatives detected throw an exception
+     * @param numbers Numbers array
+     * @throws RuntimeException
+     */
+    private static void checkForNegativeNumbers(String[] numbers) throws RuntimeException{
+        String negatives = getIntStreamFromArray(numbers)
+                .filter(number -> number < 0)
+                .boxed()
+                .map(Object::toString)
+                .collect(Collectors.joining(","));
+        if(!negatives.isEmpty()) {
+            throw new RuntimeException("Negatives not allowed: " + negatives);
+        }
     }
 }
